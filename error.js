@@ -1,18 +1,25 @@
-window.onerror = function(error, file, line) {
-    if (typeof jQuery != 'undefined') {
-        var error = {
-            error : error,
-            file  : file,
-            line  : line
+window.onerror = (function (server_script) {
+    "use strict";
+
+    return function (error, file, line) {
+        var err, params, script;
+
+        if (typeof jQuery !== 'undefined') {
+            params = {
+                error : error,
+                file  : file,
+                line  : line
+            };
+
+            jQuery.get(server_script, params);
+        } else {
+            err     = document.createElement('script');
+            err.src = server_script + '?line=' + line + '&file=' + encodeURIComponent(file) + '&error=' + encodeURIComponent(error);
+
+            script = document.getElementsByTagName('script')[0];
+            script.parentNode.insertBefore(err, script);
         }
-        $.get('/report-errors.php', error);
-    } else {
-        var err = document.createElement('script');
-        err.src = '/report-errors.php?line=' + line + '&file=' + encodeURIComponent(file) + '&error=' + encodeURIComponent(error);
 
-       var s = document.getElementsByTagName('script')[0];
-       s.parentNode.insertBefore(err, s);
-    }
-
-    return false;
-}
+        return false;
+    };
+}('/report-errors.php'));
